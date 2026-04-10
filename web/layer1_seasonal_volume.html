@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Layer 1 — Seasonal Volume Overview</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=Syne:wght@400;600;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#08080d;color:#e8e4dc;font-family:'DM Sans',sans-serif;overflow:hidden}
+
+.page{
+  display:grid;
+  grid-template-rows:auto auto 1fr;
+  height:100vh;
+  padding:28px 48px 24px;
+  max-width:none;
+  margin:0;
+}
+
+/* Header */
+.header{padding-bottom:16px;text-align:left}
+.layer-tag{font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:rgba(133,183,235,.7);margin-bottom:6px}
+.title{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(20px,2.2vw,32px);line-height:1.05;letter-spacing:-.02em;color:#e8e4dc;text-align:left;white-space:nowrap}
+.title span{color:#85b7eb}
+.subtitle{font-size:13px;color:rgba(232,228,220,.5);margin-top:5px;line-height:1.6}
+
+/* Controls row */
+.controls-row{display:flex;align-items:center;gap:16px;padding-bottom:16px;flex-wrap:nowrap;width:100%}
+.ctrl-group{display:flex;flex-direction:column;gap:5px}
+.ctrl-label{font-size:9px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:rgba(232,228,220,.4)}
+.toggle-wrap{display:flex;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:9px;overflow:hidden}
+.toggle-btn{padding:7px 16px;font-size:11px;font-family:'DM Sans',sans-serif;color:rgba(232,228,220,.45);background:none;border:none;cursor:pointer;transition:all .2s}
+.toggle-btn.active{background:rgba(133,183,235,.18);color:#85b7eb;font-weight:600}
+
+/* Stats pill */
+.stat-pill{padding:16px 20px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:0;width:100%}
+.stat-item{display:flex;flex-direction:column;gap:4px;padding:0 16px;border-right:1px solid rgba(255,255,255,.07)}.stat-item:first-child{padding-left:0}.stat-item:last-child{border-right:none}
+.stat-lbl{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(232,228,220,.4);white-space:nowrap}
+.stat-val{font-family:'Syne',sans-serif;font-weight:700;font-size:22px;color:#e8e4dc;white-space:nowrap}
+.stat-val.blue{color:#85b7eb}
+
+/* Main: 2 columns */
+.main{display:grid;grid-template-columns:minmax(0,600px) 1fr;gap:40px;min-height:0;align-items:start;margin-top:-52px}
+
+/* Heatmap side */
+.heatmap-side{display:flex;flex-direction:column;gap:0;min-height:0;padding-left:0;margin-top:80px}
+.season-row{display:flex;margin-left:86px;margin-bottom:2px}
+.season-block{font-size:9px;color:rgba(232,228,220,.22);letter-spacing:.08em;text-transform:uppercase;border-left:1px solid rgba(255,255,255,.08);padding-left:5px;white-space:nowrap;overflow:hidden}
+.month-row{display:flex;margin-left:86px;margin-bottom:4px}
+.month-lbl{font-size:11px;color:rgba(232,228,220,.35);text-align:center;flex:1}
+.heatmap-rows{display:flex;flex-direction:column;gap:4px}
+.hm-row{display:flex;align-items:center;gap:2px;cursor:pointer}
+.hm-row:hover .city-lbl{color:rgba(232,228,220,.85)}
+.hm-row.sel .city-lbl{color:#85b7eb;font-weight:600}
+.city-lbl{width:82px;font-size:11px;color:rgba(232,228,220,.45);text-align:left;padding-right:0;padding-left:0;flex-shrink:0;transition:color .2s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cell{flex:1;height:40px;border-radius:4px;cursor:pointer;transition:transform .15s;min-width:0}
+.cell:hover{transform:scale(1.1);z-index:5;box-shadow:0 0 10px rgba(133,183,235,.35)}
+.cell.sel-cell{outline:2px solid rgba(133,183,235,.8);outline-offset:1px;z-index:2;position:relative}
+
+/* Legend - sits right under heatmap, left-aligned with cells */
+.legend-wrap{display:flex;align-items:center;gap:10px;margin-top:8px;margin-left:86px}
+.legend-bar-el{flex:1;height:7px;border-radius:4px;background:linear-gradient(to right,#d6e8f7,#85b7eb,#1a4a7a)}
+.legend-lbl-row{display:flex;justify-content:space-between;margin-top:3px;margin-left:86px}
+.legend-lbl{font-size:9px;color:rgba(232,228,220,.3)}
+
+/* Right panel */
+.right-panel{display:flex;flex-direction:column;gap:14px;height:fit-content;width:100%}
+
+/* Sort control */
+.sort-ctrl{padding:10px 14px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:12px;width:100%}
+select{appearance:none;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:9px 28px 9px 12px;font-size:12px;font-family:'DM Sans',sans-serif;color:#e8e4dc;cursor:pointer;outline:none;transition:all .2s;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(232,228,220,.4)'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;width:100%}
+select:hover{border-color:rgba(255,255,255,.22)}
+select option{background:#1a1a24}
+
+/* Bar panel */
+.bar-panel{padding:14px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:12px;height:fit-content;overflow-y:auto;display:flex;flex-direction:column;width:100%}
+.bar-panel-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:rgba(232,228,220,.4);letter-spacing:.09em;text-transform:uppercase;margin-bottom:3px}
+.bar-subtitle{font-size:10px;color:rgba(232,228,220,.25);margin-bottom:10px}
+.bar-rows{display:flex;flex-direction:column;gap:9px}
+.bar-row{display:flex;align-items:center;gap:7px;cursor:pointer;width:100%}
+.bar-row:hover .bar-city{color:rgba(232,228,220,.8)}
+.bar-city{font-size:11px;color:rgba(232,228,220,.45);width:100px;text-align:right;flex-shrink:0;transition:color .2s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-row.sel .bar-city{color:#85b7eb;font-weight:600}
+.bar-track{flex:1;min-width:0;height:24px;background:rgba(255,255,255,.04);border-radius:3px;overflow:visible;position:relative}
+.bar-fill{height:100%;border-radius:3px;transition:width .7s cubic-bezier(.16,1,.3,1);background:linear-gradient(to right,#2a6496,#85b7eb)}
+.bar-row.sel .bar-fill{background:linear-gradient(to right,#3a80c0,#b3d7f5)}
+.bar-val{font-size:11px;color:rgba(232,228,220,.4);flex-shrink:0;font-variant-numeric:tabular-nums;width:44px;text-align:right}
+.bar-diff{font-size:10px;color:rgba(232,228,220,.25);flex-shrink:0;width:48px;text-align:left}
+.ref-line{position:absolute;top:-2px;bottom:-2px;width:1.5px;background:rgba(133,183,235,.55);pointer-events:none}
+
+#tooltip{position:fixed;pointer-events:none;z-index:100;background:rgba(14,14,22,.97);border:1px solid rgba(255,255,255,.1);border-radius:9px;padding:7px 12px;font-size:11px;color:rgba(232,228,220,.85);opacity:0;transition:opacity .15s;white-space:nowrap;backdrop-filter:blur(12px)}
+#tooltip.show{opacity:1}
+</style>
+</head>
+<body>
+<div id="tooltip"></div>
+<div class="page">
+
+  <div class="header">
+    <div class="layer-tag">Layer 1 · Seasonal Volume</div>
+    <h1 class="title">Seasonal Volume Overview <span>of Live Music Activity</span></h1>
+    <p class="subtitle">Monthly event counts across 13 cities in 2025. Click a cell to compare. Hover for details.</p>
+  </div>
+
+  <div class="controls-row">
+    <div class="ctrl-group">
+      <div class="ctrl-label">Current measure</div>
+      <div class="toggle-wrap">
+        <button class="toggle-btn active" id="btnRaw" onclick="setMode('raw')">Raw Event Counts</button>
+        <button class="toggle-btn" id="btnPop" onclick="setMode('per100k')">Per 100k Population</button>
+      </div>
+    </div>
+    <div class="ctrl-group" style="min-width:180px;margin-left:40px">
+      <div class="ctrl-label">Legend: monthly event count</div>
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <div style="width:220px;height:7px;border-radius:4px;background:linear-gradient(to right,#d6e8f7,#85b7eb,#1a4a7a)"></div>
+        <div style="width:220px;display:flex;justify-content:space-between;font-size:9px;color:rgba(232,228,220,.3)"><span>Low</span><span>High</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="main">
+
+    <!-- LEFT: heatmap -->
+    <div class="heatmap-side">
+      <div class="season-row" id="seasonRow"></div>
+      <div class="month-row" id="monthRow"></div>
+      <div class="heatmap-rows" id="hmRows"></div>
+
+    </div>
+
+    <!-- RIGHT: sort + bar chart -->
+    <div class="right-panel">
+      <div class="stat-pill">
+        <div class="stat-item"><div class="stat-lbl">Selected city</div><div class="stat-val blue" id="statCity">—</div></div>
+        <div class="stat-item"><div class="stat-lbl">Selected month</div><div class="stat-val" id="statMonth">—</div></div>
+        <div class="stat-item"><div class="stat-lbl">Total Events</div><div class="stat-val" id="statEvents">—</div></div>
+        <div class="stat-item"><div class="stat-lbl">% of annual</div><div class="stat-val" id="statPct">—</div></div>
+      </div>
+      <div class="sort-ctrl">
+        <div class="ctrl-label" style="margin-bottom:6px">Sort bar chart by</div>
+        <select id="sortSel" onchange="renderBars()">
+          <option value="annual">Annual Total</option>
+          <option value="Jan">Jan</option><option value="Feb">Feb</option><option value="Mar">Mar</option><option value="Apr">Apr</option><option value="May">May</option><option value="Jun">Jun</option><option value="Jul">Jul</option><option value="Aug">Aug</option><option value="Sep">Sep</option><option value="Oct">Oct</option><option value="Nov">Nov</option><option value="Dec">Dec</option>
+        </select>
+      </div>
+      <div class="bar-panel">
+        <div class="bar-panel-title">Ranked City Event Totals</div>
+        <div class="bar-subtitle" id="barSub">Sorted by annual total</div>
+        <div class="bar-rows" id="barRows"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const DATA={"Calgary":{"raw":{"Jan":21,"Feb":36,"Mar":42,"Apr":59,"May":45,"Jun":66,"Jul":192,"Aug":50,"Sep":95,"Oct":76,"Nov":58,"Dec":15},"per100k":{"Jan":1.5,"Feb":2.6,"Mar":3.0,"Apr":4.2,"May":3.2,"Jun":4.7,"Jul":13.7,"Aug":3.6,"Sep":6.8,"Oct":5.4,"Nov":4.1,"Dec":1.1},"total":755,"total_per100k":53.9,"pop":1.4},"Chicago":{"raw":{"Jan":278,"Feb":330,"Mar":557,"Apr":583,"May":718,"Jun":778,"Jul":702,"Aug":912,"Sep":961,"Oct":708,"Nov":662,"Dec":444},"per100k":{"Jan":10.3,"Feb":12.2,"Mar":20.6,"Apr":21.6,"May":26.6,"Jun":28.8,"Jul":26.0,"Aug":33.8,"Sep":35.6,"Oct":26.2,"Nov":24.5,"Dec":16.4},"total":7633,"total_per100k":282.7,"pop":2.7},"Detroit":{"raw":{"Jan":86,"Feb":159,"Mar":252,"Apr":251,"May":415,"Jun":290,"Jul":247,"Aug":290,"Sep":358,"Oct":317,"Nov":290,"Dec":157},"per100k":{"Jan":13.9,"Feb":25.6,"Mar":40.6,"Apr":40.5,"May":66.9,"Jun":46.8,"Jul":39.8,"Aug":46.8,"Sep":57.7,"Oct":51.1,"Nov":46.8,"Dec":25.3},"total":3112,"total_per100k":501.9,"pop":0.62},"Las Vegas":{"raw":{"Jan":154,"Feb":223,"Mar":267,"Apr":293,"May":585,"Jun":245,"Jul":206,"Aug":241,"Sep":326,"Oct":492,"Nov":315,"Dec":275},"per100k":{"Jan":24.1,"Feb":34.8,"Mar":41.7,"Apr":45.8,"May":91.4,"Jun":38.3,"Jul":32.2,"Aug":37.7,"Sep":50.9,"Oct":76.9,"Nov":49.2,"Dec":43.0},"total":3622,"total_per100k":565.9,"pop":0.64},"Los Angeles":{"raw":{"Jan":0,"Feb":41,"Mar":952,"Apr":969,"May":1121,"Jun":802,"Jul":1028,"Aug":976,"Sep":969,"Oct":1225,"Nov":1088,"Dec":829},"per100k":{"Jan":0.0,"Feb":1.1,"Mar":24.4,"Apr":24.8,"May":28.7,"Jun":20.6,"Jul":26.4,"Aug":25.0,"Sep":24.8,"Oct":31.4,"Nov":27.9,"Dec":21.3},"total":10000,"total_per100k":256.4,"pop":3.9},"Miami":{"raw":{"Jan":219,"Feb":517,"Mar":626,"Apr":211,"May":207,"Jun":65,"Jul":66,"Aug":71,"Sep":72,"Oct":223,"Nov":201,"Dec":129},"per100k":{"Jan":48.7,"Feb":114.9,"Mar":139.1,"Apr":46.9,"May":46.0,"Jun":14.4,"Jul":14.7,"Aug":15.8,"Sep":16.0,"Oct":49.6,"Nov":44.7,"Dec":28.7},"total":2607,"total_per100k":579.3,"pop":0.45},"Montreal":{"raw":{"Jan":69,"Feb":128,"Mar":194,"Apr":169,"May":334,"Jun":338,"Jul":138,"Aug":232,"Sep":251,"Oct":241,"Nov":254,"Dec":114},"per100k":{"Jan":3.8,"Feb":7.1,"Mar":10.8,"Apr":9.4,"May":18.6,"Jun":18.8,"Jul":7.7,"Aug":12.9,"Sep":13.9,"Oct":13.4,"Nov":14.1,"Dec":6.3},"total":2462,"total_per100k":136.8,"pop":1.8},"New York":{"raw":{"Jan":0,"Feb":0,"Mar":440,"Apr":1025,"May":1195,"Jun":1033,"Jul":891,"Aug":863,"Sep":1283,"Oct":1268,"Nov":1094,"Dec":908},"per100k":{"Jan":0.0,"Feb":0.0,"Mar":5.3,"Apr":12.3,"May":14.4,"Jun":12.4,"Jul":10.7,"Aug":10.4,"Sep":15.5,"Oct":15.3,"Nov":13.2,"Dec":10.9},"total":10000,"total_per100k":120.5,"pop":8.3},"Ottawa":{"raw":{"Jan":28,"Feb":49,"Mar":47,"Apr":32,"May":68,"Jun":115,"Jul":144,"Aug":25,"Sep":93,"Oct":72,"Nov":55,"Dec":27},"per100k":{"Jan":2.8,"Feb":4.9,"Mar":4.7,"Apr":3.2,"May":6.8,"Jun":11.5,"Jul":14.4,"Aug":2.5,"Sep":9.3,"Oct":7.2,"Nov":5.5,"Dec":2.7},"total":755,"total_per100k":75.5,"pop":1.0},"San Francisco":{"raw":{"Jan":192,"Feb":288,"Mar":301,"Apr":314,"May":358,"Jun":268,"Jul":237,"Aug":347,"Sep":381,"Oct":490,"Nov":349,"Dec":232},"per100k":{"Jan":22.1,"Feb":33.1,"Mar":34.6,"Apr":36.1,"May":41.1,"Jun":30.8,"Jul":27.2,"Aug":39.9,"Sep":43.8,"Oct":56.3,"Nov":40.1,"Dec":26.7},"total":3757,"total_per100k":431.8,"pop":0.87},"Toronto":{"raw":{"Jan":163,"Feb":297,"Mar":418,"Apr":410,"May":593,"Jun":507,"Jul":407,"Aug":497,"Sep":590,"Oct":595,"Nov":550,"Dec":283},"per100k":{"Jan":5.6,"Feb":10.2,"Mar":14.4,"Apr":14.1,"May":20.4,"Jun":17.5,"Jul":14.0,"Aug":17.1,"Sep":20.3,"Oct":20.5,"Nov":19.0,"Dec":9.8},"total":5310,"total_per100k":183.1,"pop":2.9},"Vancouver":{"raw":{"Jan":89,"Feb":134,"Mar":204,"Apr":232,"May":211,"Jun":142,"Jul":167,"Aug":170,"Sep":272,"Oct":232,"Nov":174,"Dec":64},"per100k":{"Jan":13.3,"Feb":20.0,"Mar":30.4,"Apr":34.6,"May":31.5,"Jun":21.2,"Jul":24.9,"Aug":25.4,"Sep":40.6,"Oct":34.6,"Nov":26.0,"Dec":9.6},"total":2091,"total_per100k":312.1,"pop":0.67},"Washington":{"raw":{"Jan":233,"Feb":260,"Mar":359,"Apr":388,"May":432,"Jun":475,"Jul":312,"Aug":287,"Sep":439,"Oct":500,"Nov":357,"Dec":252},"per100k":{"Jan":32.8,"Feb":36.6,"Mar":50.6,"Apr":54.6,"May":60.8,"Jun":66.9,"Jul":43.9,"Aug":40.4,"Sep":61.8,"Oct":70.4,"Nov":50.3,"Dec":35.5},"total":4294,"total_per100k":604.8,"pop":0.71}};
+const MONTHS=["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const CITIES=["Calgary", "Chicago", "Detroit", "Las Vegas", "Los Angeles", "Miami", "Montreal", "New York", "Ottawa", "San Francisco", "Toronto", "Vancouver", "Washington"];
+const SEASONS=[
+  {l:'Winter',n:3},{l:'Spring',n:2},{l:'Summer',n:4},{l:'Fall',n:3}
+];
+
+let mode='raw', selCity=null, selMonth=null;
+
+function setMode(m){
+  mode=m;
+  document.getElementById('btnRaw').classList.toggle('active',m==='raw');
+  document.getElementById('btnPop').classList.toggle('active',m==='per100k');
+  render();
+}
+function getVal(c,m){return mode==='raw'?DATA[c].raw[m]:DATA[c].per100k[m];}
+function getTotal(c){return mode==='raw'?DATA[c].total:DATA[c].total_per100k;}
+function maxVal(){
+  let mx=0;
+  CITIES.forEach(c=>MONTHS.forEach(m=>{const v=getVal(c,m);if(v>mx)mx=v;}));
+  return mx;
+}
+function cellColor(v,mx){
+  if(v===0)return'rgba(255,255,255,.03)';
+  const t=v/mx;
+  const stops=[[214,232,247],[133,183,235],[42,100,150],[26,74,122]];
+  const idx=t*(stops.length-1);
+  const lo=Math.floor(idx),hi=Math.min(stops.length-1,lo+1),f=idx-lo;
+  const r=Math.round(stops[lo][0]+(stops[hi][0]-stops[lo][0])*f);
+  const g=Math.round(stops[lo][1]+(stops[hi][1]-stops[lo][1])*f);
+  const b=Math.round(stops[lo][2]+(stops[hi][2]-stops[lo][2])*f);
+  return`rgb(${r},${g},${b})`;
+}
+
+function render(){renderHeatmap();renderBars();}
+
+function renderHeatmap(){
+  const mx=maxVal();
+  // Season row
+  const sr=document.getElementById('seasonRow');
+  sr.innerHTML=SEASONS.map(s=>`<div class="season-block" style="flex:${s.n}">${s.l}</div>`).join('');
+  // Month row
+  const mr=document.getElementById('monthRow');
+  mr.innerHTML=MONTHS.map(m=>`<div class="month-lbl">${m}</div>`).join('');
+  // Rows
+  const container=document.getElementById('hmRows');
+  container.innerHTML='';
+  CITIES.forEach(city=>{
+    const row=document.createElement('div');
+    row.className='hm-row'+(selCity===city?' sel':'');
+    row.innerHTML=`<div class="city-lbl">${city}</div>`;
+    MONTHS.forEach(month=>{
+      const v=getVal(city,month);
+      const cell=document.createElement('div');
+      cell.className='cell'+(selCity===city&&selMonth===month?' sel-cell':'');
+      cell.style.background=cellColor(v,mx);
+      cell.addEventListener('mouseenter',e=>{
+        const pct=DATA[city].total>0?Math.round(DATA[city].raw[month]/DATA[city].total*100):0;
+        showTip(e,`${city} — ${month}<br>${v.toLocaleString()} events · ${pct}% of annual`);
+      });
+      cell.addEventListener('mousemove',moveTip);
+      cell.addEventListener('mouseleave',hideTip);
+      cell.addEventListener('click',()=>{
+        selCity=city;selMonth=month;
+        document.getElementById('sortSel').value=month;
+        updateStats(city,month);
+        render();
+      });
+      row.appendChild(cell);
+    });
+    container.appendChild(row);
+  });
+}
+
+function updateStats(city,month){
+  const v=DATA[city].raw[month];
+  const pct=DATA[city].total>0?Math.round(v/DATA[city].total*100):0;
+  document.getElementById('statCity').textContent=city;
+  document.getElementById('statMonth').textContent=month;
+  document.getElementById('statEvents').textContent=v.toLocaleString();
+  document.getElementById('statPct').textContent=pct+'%';
+}
+
+function renderBars(){
+  const sortBy=document.getElementById('sortSel').value;
+  let sorted=[...CITIES];
+  if(sortBy==='annual') sorted.sort((a,b)=>getTotal(b)-getTotal(a));
+  else sorted.sort((a,b)=>getVal(b,sortBy)-getVal(a,sortBy));
+  document.getElementById('barSub').textContent=sortBy==='annual'?'Sorted by annual total':`Sorted by ${sortBy} event count`;
+  const vals=sorted.map(c=>sortBy==='annual'?getTotal(c):getVal(c,sortBy));
+  const mx=Math.max(...vals);
+  const refVal=selCity?(sortBy==='annual'?getTotal(selCity):getVal(selCity,sortBy)):null;
+  const refPct=refVal&&mx>0?refVal/mx*100:null;
+  const container=document.getElementById('barRows');
+  container.innerHTML='';
+  sorted.forEach((city,i)=>{
+    const v=vals[i];
+    const pct=mx>0?v/mx*100:0;
+    const isSel=city===selCity;
+    const diff=selCity&&!isSel&&refVal!=null?v-refVal:null;
+    const row=document.createElement('div');
+    row.className='bar-row'+(isSel?' sel':'');
+    row.innerHTML=`
+      <div class="bar-city">${city}</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${pct}%"></div>
+        ${refPct&&!isSel?`<div class="ref-line" style="left:${refPct}%"></div>`:''}
+      </div>
+      <div class="bar-val">${v.toLocaleString()}</div>
+      ${diff!=null?`<div class="bar-diff">${diff>0?'+':''}${diff.toLocaleString()}</div>`:''}`;
+    row.querySelector('.bar-city').addEventListener('click',()=>{
+      selCity=city;if(!selMonth)selMonth=MONTHS[0];
+      updateStats(city,selMonth||MONTHS[0]);render();
+    });
+    container.appendChild(row);
+  });
+}
+
+const tip=document.getElementById('tooltip');
+function showTip(e,h){tip.innerHTML=h;tip.classList.add('show');moveTip(e);}
+function moveTip(e){tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-10)+'px';}
+function hideTip(){tip.classList.remove('show');}
+
+render();
+</script>
+</body>
+</html>
