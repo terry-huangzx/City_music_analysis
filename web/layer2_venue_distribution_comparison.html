@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Layer 2 — Venue Distribution Comparison</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=Syne:wght@400;600;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:#08080d;color:#e8e4dc;font-family:'DM Sans',sans-serif;overflow:hidden}
+.page{display:grid;grid-template-rows:auto auto auto 1fr;height:100vh;padding:28px 40px 24px;gap:14px}
+.header{padding-bottom:4px}
+.layer-tag{font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:rgba(231,111,81,.7);margin-bottom:6px}
+.title{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(20px,2.4vw,34px);line-height:1.04;letter-spacing:-.02em}
+.title span{color:#2a9d8f}
+.subtitle{font-size:13px;color:rgba(232,228,220,.52);margin-top:7px;line-height:1.65;max-width:980px}
+
+.selector-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.selector-card,.stats-row,.chart-card,.detail-card,.metric-card{background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.08);border-radius:16px}
+.selector-card{padding:14px 16px}
+.card-label{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:rgba(232,228,220,.42);margin-bottom:10px}
+.city-buttons{display:flex;flex-wrap:wrap;gap:8px}
+.city-btn{border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:rgba(232,228,220,.56);padding:8px 12px;border-radius:999px;font-size:12px;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
+.city-btn:hover{color:#e8e4dc;border-color:rgba(255,255,255,.2)}
+.city-btn.active.left{background:rgba(231,111,81,.18);border-color:rgba(231,111,81,.45);color:#f2b19f}
+.city-btn.active.right{background:rgba(42,157,143,.18);border-color:rgba(42,157,143,.45);color:#96ddd3}
+
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:0;padding:0 10px}
+.metric-card{padding:14px 16px;border:none;border-right:1px solid rgba(255,255,255,.07);border-radius:0;background:none}
+.metric-card:last-child{border-right:none}
+.metric-val{font-family:'Syne',sans-serif;font-size:28px;font-weight:700;line-height:1.05}
+.metric-sub{font-size:11px;color:rgba(232,228,220,.34);margin-top:5px;line-height:1.45}
+.delta-pos{color:#96ddd3}.delta-neg{color:#f2b19f}
+
+.main{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:18px;min-height:0}
+.chart-card{padding:16px 18px;display:flex;flex-direction:column;min-height:0}
+.chart-head{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:14px}
+.chart-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700}
+.chart-copy{font-size:12px;color:rgba(232,228,220,.38);line-height:1.55;max-width:560px}
+.axis-head{display:grid;grid-template-columns:1fr 76px 1fr;gap:12px;margin-bottom:8px}
+.axis-name{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.axis-name.left{text-align:right;color:#f2b19f}
+.axis-name.right{text-align:left;color:#96ddd3}
+.axis-mid{text-align:center;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:rgba(232,228,220,.28)}
+.mirror-wrap{display:flex;flex-direction:column;gap:8px;overflow:auto;padding-right:4px}
+.mirror-wrap::-webkit-scrollbar{width:4px}
+.mirror-wrap::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:4px}
+.rank-row{display:grid;grid-template-columns:1fr 76px 1fr;gap:12px;align-items:center;min-height:42px}
+.bar-cell{display:flex;align-items:center;gap:10px;min-width:0}
+.bar-cell.left{justify-content:flex-end}
+.venue-label{font-size:12px;color:rgba(232,228,220,.68);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+.bar-track{flex:1;height:22px;background:rgba(255,255,255,.045);border-radius:8px;position:relative;overflow:hidden}
+.bar-fill{height:100%;border-radius:8px;display:flex;align-items:center;cursor:pointer;transition:transform .16s ease,filter .16s ease}
+.bar-fill:hover{transform:scaleY(1.08);filter:brightness(1.07)}
+.bar-fill.left{margin-left:auto;background:linear-gradient(to left,#e76f51,#f0a38e)}
+.bar-fill.right{background:linear-gradient(to right,#2a9d8f,#86d8cf)}
+.bar-fill.active{box-shadow:0 0 0 2px rgba(255,255,255,.16) inset,0 0 18px rgba(255,255,255,.08)}
+.share-label{position:absolute;top:50%;transform:translateY(-50%);font-size:11px;font-weight:600;color:#171717}
+.share-label.left{left:10px}.share-label.right{right:10px}
+.rank-pill{justify-self:center;width:76px;text-align:center;padding:8px 0;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);font-size:12px;color:rgba(232,228,220,.55)}
+
+.detail-card{padding:18px;display:flex;flex-direction:column;gap:14px;min-height:0}
+.detail-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;line-height:1.08}
+.detail-tag{display:inline-block;padding:4px 10px;border-radius:999px;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.detail-tag.left{background:rgba(231,111,81,.14);border:1px solid rgba(231,111,81,.32);color:#f2b19f}
+.detail-tag.right{background:rgba(42,157,143,.14);border:1px solid rgba(42,157,143,.32);color:#96ddd3}
+.detail-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.meta-box{padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
+.meta-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(232,228,220,.35);margin-bottom:4px}
+.meta-value{font-family:'Syne',sans-serif;font-size:22px;font-weight:700}
+.detail-copy{font-size:12px;color:rgba(232,228,220,.52);line-height:1.65}
+.compare-mini{display:flex;flex-direction:column;gap:10px}
+.mini-row{display:grid;grid-template-columns:64px 1fr auto;gap:10px;align-items:center}
+.mini-label{font-size:11px;color:rgba(232,228,220,.4)}
+.mini-track{height:9px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden}
+.mini-fill{height:100%;border-radius:999px}
+.mini-fill.left{background:linear-gradient(to right,#e76f51,#f0a38e)}
+.mini-fill.right{background:linear-gradient(to right,#2a9d8f,#86d8cf)}
+.mini-value{font-size:11px;color:rgba(232,228,220,.56);font-variant-numeric:tabular-nums}
+
+@media (max-width:1100px){
+  .page{overflow:auto;height:auto}
+  html,body{overflow:auto}
+  .selector-row,.main,.stats-row{grid-template-columns:1fr}
+  .metric-card{border-right:none;border-bottom:1px solid rgba(255,255,255,.07)}
+  .metric-card:last-child{border-bottom:none}
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div class="layer-tag">Layer 2 · Venue Concentration</div>
+    <h1 class="title">Venue Distribution <span>Compared by Rank</span></h1>
+    <p class="subtitle">
+      This view makes the comparison discrete and explicit: each row is a venue rank, not a continuous curve.
+      Bars grow from the center so you can compare concentration rank by rank. Click any row or bar to inspect
+      both cities at that same rank side by side.
+    </p>
+  </div>
+
+  <div class="selector-row">
+    <div class="selector-card">
+      <div class="card-label">Left City</div>
+      <div class="city-buttons" id="leftButtons"></div>
+    </div>
+    <div class="selector-card">
+      <div class="card-label">Right City</div>
+      <div class="city-buttons" id="rightButtons"></div>
+    </div>
+  </div>
+
+  <div class="stats-row" id="summaryRow"></div>
+
+  <div class="main">
+    <div class="chart-card">
+      <div class="chart-head">
+        <div>
+          <div class="chart-title" id="chartTitle">Toronto vs Montreal</div>
+          <div class="chart-copy" id="chartCopy"></div>
+        </div>
+      </div>
+      <div class="axis-head">
+        <div class="axis-name left" id="leftAxisName">Toronto</div>
+        <div class="axis-mid">Venue rank</div>
+        <div class="axis-name right" id="rightAxisName">Montreal</div>
+      </div>
+      <div class="mirror-wrap" id="mirrorRows"></div>
+    </div>
+
+    <aside class="detail-card">
+      <div id="detailTagWrap"></div>
+      <div class="detail-title" id="detailTitle">Select a rank row</div>
+      <div class="detail-copy" id="detailCopy">The detail panel will show both cities at the same venue rank so the comparison stays aligned.</div>
+      <div class="detail-meta" id="detailMeta"></div>
+      <div class="meta-box">
+        <div class="meta-label">Share Gap At This Rank</div>
+        <div class="meta-value" id="detailGap">—</div>
+      </div>
+      <div>
+        <div class="card-label" style="margin-bottom:10px">How concentrated is the whole city?</div>
+        <div class="compare-mini" id="miniCompare"></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+const DATA={"Calgary":{"total":754,"venues":88,"top1":13.3,"top5":46.2,"top10":65.0,"top20":83.3,"ranked":[{"rank":1,"venue":"Grey Eagle Resort & Casino","events":100,"share":13.26,"cum":13.3},{"rank":2,"venue":"The Palace Theatre","events":88,"share":11.67,"cum":24.9},{"rank":3,"venue":"Dicken's Pub","events":67,"share":8.89,"cum":33.8},{"rank":4,"venue":"Scotiabank Saddledome","events":61,"share":8.09,"cum":41.9},{"rank":5,"venue":"Calgary Stampede Coca Cola Stage","events":32,"share":4.24,"cum":46.2},{"rank":6,"venue":"MacEwan Hall, University of Calgary","events":30,"share":3.98,"cum":50.1},{"rank":7,"venue":"Nashville North","events":30,"share":3.98,"cum":54.1},{"rank":8,"venue":"The Palomino","events":28,"share":3.71,"cum":57.8},{"rank":9,"venue":"Prince's Island Park","events":28,"share":3.71,"cum":61.5},{"rank":10,"venue":"Modern Love","events":26,"share":3.45,"cum":65.0},{"rank":11,"venue":"Commonwealth Bar & Stage","events":22,"share":2.92,"cum":67.9},{"rank":12,"venue":"Southern Alberta Jubilee Auditorium","events":22,"share":2.92,"cum":70.8},{"rank":13,"venue":"Cowboys Stampede Tent","events":21,"share":2.79,"cum":73.6},{"rank":14,"venue":"The Confluence Historic Site & Parkland","events":17,"share":2.25,"cum":75.9},{"rank":15,"venue":"Big Four Roadhouse","events":15,"share":1.99,"cum":77.9}]},"Chicago":{"total":7629,"venues":456,"top1":3.8,"top5":16.7,"top10":30.5,"top20":50.5,"ranked":[{"rank":1,"venue":"Thalia Hall","events":290,"share":3.8,"cum":3.8},{"rank":2,"venue":"Metro","events":284,"share":3.72,"cum":7.5},{"rank":3,"venue":"Rock Club","events":261,"share":3.42,"cum":10.9},{"rank":4,"venue":"The Salt Shed","events":222,"share":2.91,"cum":13.9},{"rank":5,"venue":"Cobra Lounge","events":220,"share":2.88,"cum":16.7},{"rank":6,"venue":"House of Blues","events":220,"share":2.88,"cum":19.6},{"rank":7,"venue":"Bottom Lounge","events":216,"share":2.83,"cum":22.5},{"rank":8,"venue":"Grant Park","events":207,"share":2.71,"cum":25.2},{"rank":9,"venue":"Beat Kitchen","events":206,"share":2.7,"cum":27.9},{"rank":10,"venue":"Subterranean","events":202,"share":2.65,"cum":30.5},{"rank":11,"venue":"Empty Bottle","events":194,"share":2.54,"cum":33.1},{"rank":12,"venue":"WC Social Club","events":183,"share":2.4,"cum":35.5},{"rank":13,"venue":"Lincoln Hall","events":169,"share":2.22,"cum":37.7},{"rank":14,"venue":"Schubas Tavern","events":162,"share":2.12,"cum":39.8},{"rank":15,"venue":"The Forge","events":156,"share":2.04,"cum":41.8}]},"Detroit":{"total":3111,"venues":144,"top1":9.6,"top5":32.5,"top10":51.2,"top20":74.4,"ranked":[{"rank":1,"venue":"The Sanctuary","events":298,"share":9.58,"cum":9.6},{"rank":2,"venue":"Saint Andrew's Hall","events":236,"share":7.59,"cum":17.2},{"rank":3,"venue":"The Fillmore Detroit","events":183,"share":5.88,"cum":23.0},{"rank":4,"venue":"El Club","events":162,"share":5.21,"cum":28.3},{"rank":5,"venue":"Majestic Theatre","events":131,"share":4.21,"cum":32.5},{"rank":6,"venue":"Royal Oak Music Theatre","events":127,"share":4.08,"cum":36.5},{"rank":7,"venue":"Little Caesars Arena","events":122,"share":3.92,"cum":40.5},{"rank":8,"venue":"Pine Knob Music Theatre","events":122,"share":3.92,"cum":44.4},{"rank":9,"venue":"Small's","events":114,"share":3.66,"cum":48.1},{"rank":10,"venue":"The Loving Touch","events":99,"share":3.18,"cum":51.2},{"rank":11,"venue":"Magic Bag","events":99,"share":3.18,"cum":54.4},{"rank":12,"venue":"Lager House","events":91,"share":2.93,"cum":57.3},{"rank":13,"venue":"The Token Lounge","events":88,"share":2.83,"cum":60.2},{"rank":14,"venue":"Masonic Temple Theatre","events":74,"share":2.38,"cum":62.6},{"rank":15,"venue":"Michigan Lottery Amphitheatre at Freedom Hill","events":70,"share":2.25,"cum":64.8}]},"Las Vegas":{"total":3618,"venues":212,"top1":4.1,"top5":17.5,"top10":31.2,"top20":49.7,"ranked":[{"rank":1,"venue":"T-Mobile Arena","events":147,"share":4.06,"cum":4.1},{"rank":2,"venue":"House of Blues","events":128,"share":3.54,"cum":7.6},{"rank":3,"venue":"Downtown Events Center","events":121,"share":3.34,"cum":10.9},{"rank":4,"venue":"Sphere at The Venetian Resort","events":120,"share":3.32,"cum":14.3},{"rank":5,"venue":"Backstage Bar & Billiards","events":116,"share":3.21,"cum":17.5},{"rank":6,"venue":"Las Vegas Festival Grounds","events":109,"share":3.01,"cum":20.5},{"rank":7,"venue":"Omnia Nightclub","events":99,"share":2.74,"cum":23.2},{"rank":8,"venue":"Dolby Live at Park MGM","events":97,"share":2.68,"cum":25.9},{"rank":9,"venue":"XS Nightclub","events":96,"share":2.65,"cum":28.6},{"rank":10,"venue":"Brooklyn Bowl","events":95,"share":2.63,"cum":31.2},{"rank":11,"venue":"Fremont Street Experience","events":78,"share":2.16,"cum":33.3},{"rank":12,"venue":"The Theater at Virgin Hotels","events":74,"share":2.05,"cum":35.4},{"rank":13,"venue":"The Colosseum","events":71,"share":1.96,"cum":37.3},{"rank":14,"venue":"LIV","events":68,"share":1.88,"cum":39.2},{"rank":15,"venue":"The Venetian Theatre","events":67,"share":1.85,"cum":41.1}]},"Los Angeles":{"total":9983,"venues":660,"top1":2.7,"top5":12.7,"top10":23.4,"top20":41.4,"ranked":[{"rank":1,"venue":"Blue Note Los Angeles","events":271,"share":2.71,"cum":2.7},{"rank":2,"venue":"The Belasco","events":264,"share":2.64,"cum":5.4},{"rank":3,"venue":"Whisky A Go Go","events":254,"share":2.54,"cum":7.9},{"rank":4,"venue":"Lodge Room","events":248,"share":2.48,"cum":10.4},{"rank":5,"venue":"House of Blues","events":232,"share":2.32,"cum":12.7},{"rank":6,"venue":"The Observatory","events":218,"share":2.18,"cum":14.9},{"rank":7,"venue":"Wiltern Theatre","events":215,"share":2.15,"cum":17.0},{"rank":8,"venue":"Shoreline Waterfront","events":214,"share":2.14,"cum":19.2},{"rank":9,"venue":"Largo at the Coronet","events":212,"share":2.12,"cum":21.3},{"rank":10,"venue":"Teragram Ballroom","events":206,"share":2.06,"cum":23.4},{"rank":11,"venue":"Greek Theatre","events":205,"share":2.05,"cum":25.4},{"rank":12,"venue":"1720","events":198,"share":1.98,"cum":27.4},{"rank":13,"venue":"The Fonda Theatre","events":190,"share":1.9,"cum":29.3},{"rank":14,"venue":"Zebulon Cafe","events":187,"share":1.87,"cum":31.2},{"rank":15,"venue":"Kia Forum","events":181,"share":1.81,"cum":33.0}]},"Miami":{"total":2606,"venues":157,"top1":9.2,"top5":36.0,"top10":55.4,"top20":74.9,"ranked":[{"rank":1,"venue":"The Pool Deck on Norwegian Gem","events":240,"share":9.21,"cum":9.2},{"rank":2,"venue":"Atrium @ Norwegian Gem","events":199,"share":7.64,"cum":16.8},{"rank":3,"venue":"Independence of the Seas","events":179,"share":6.87,"cum":23.7},{"rank":4,"venue":"Norwegian Gem - Stardust Theater","events":164,"share":6.29,"cum":30.0},{"rank":5,"venue":"Hard Rock Live","events":157,"share":6.02,"cum":36.0},{"rank":6,"venue":"Spinnaker Lounge @ Norwegian Gem","events":118,"share":4.53,"cum":40.6},{"rank":7,"venue":"Norwegian Joy","events":115,"share":4.41,"cum":45.0},{"rank":8,"venue":"Magnum's @ Norwegian Gem","events":92,"share":3.53,"cum":48.5},{"rank":9,"venue":"LIV","events":90,"share":3.45,"cum":52.0},{"rank":10,"venue":"Gramps","events":90,"share":3.45,"cum":55.4},{"rank":11,"venue":"Kaseya Center","events":77,"share":2.95,"cum":58.4},{"rank":12,"venue":"E11EVEN MIAMI","events":63,"share":2.42,"cum":60.8},{"rank":13,"venue":"Bayfront Park","events":58,"share":2.23,"cum":63.0},{"rank":14,"venue":"Norwegian Jewel","events":53,"share":2.03,"cum":65.0},{"rank":15,"venue":"ZeyZey","events":50,"share":1.92,"cum":67.0}]},"Montreal":{"total":2461,"venues":173,"top1":9.1,"top5":34.4,"top10":53.5,"top20":71.2,"ranked":[{"rank":1,"venue":"MTELUS","events":224,"share":9.1,"cum":9.1},{"rank":2,"venue":"Les Foufounes Électriques","events":173,"share":7.03,"cum":16.1},{"rank":3,"venue":"Théâtre Beanfield","events":171,"share":6.95,"cum":23.1},{"rank":4,"venue":"Théâtre Fairmount","events":143,"share":5.81,"cum":28.9},{"rank":5,"venue":"Parc Jean-Drapeau","events":136,"share":5.53,"cum":34.4},{"rank":6,"venue":"Bar \"Le Ritz\" P.D.B","events":119,"share":4.84,"cum":39.3},{"rank":7,"venue":"Club Soda","events":94,"share":3.82,"cum":43.1},{"rank":8,"venue":"Piranha Bar","events":94,"share":3.82,"cum":46.9},{"rank":9,"venue":"Place Bell","events":85,"share":3.45,"cum":50.3},{"rank":10,"venue":"Centre Bell","events":78,"share":3.17,"cum":53.5},{"rank":11,"venue":"Le Studio TD","events":67,"share":2.72,"cum":56.2},{"rank":12,"venue":"Olympia de Montréal","events":66,"share":2.68,"cum":58.9},{"rank":13,"venue":"l'Escogriffe Bar Spectacle","events":50,"share":2.03,"cum":61.0},{"rank":14,"venue":"Cabaret Foufounes","events":44,"share":1.79,"cum":62.7},{"rank":15,"venue":"Salle Wilfrid-Pelletier","events":41,"share":1.67,"cum":64.4}]},"New York":{"total":9993,"venues":763,"top1":5.7,"top5":14.9,"top10":24.1,"top20":38.1,"ranked":[{"rank":1,"venue":"Village Vanguard","events":574,"share":5.74,"cum":5.7},{"rank":2,"venue":"Brooklyn Paramount","events":265,"share":2.65,"cum":8.4},{"rank":3,"venue":"Bowery Ballroom","events":231,"share":2.31,"cum":10.7},{"rank":4,"venue":"The Meadows","events":217,"share":2.17,"cum":12.9},{"rank":5,"venue":"Irving Plaza","events":204,"share":2.04,"cum":14.9},{"rank":6,"venue":"Baby's All Right","events":204,"share":2.04,"cum":17.0},{"rank":7,"venue":"Warsaw","events":198,"share":1.98,"cum":18.9},{"rank":8,"venue":"TV Eye","events":178,"share":1.78,"cum":20.7},{"rank":9,"venue":"Madison Square Garden","events":170,"share":1.7,"cum":22.4},{"rank":10,"venue":"Mercury Lounge","events":169,"share":1.69,"cum":24.1},{"rank":11,"venue":"Webster Hall","events":168,"share":1.68,"cum":25.8},{"rank":12,"venue":"Brooklyn Steel","events":152,"share":1.52,"cum":27.3},{"rank":13,"venue":"The Stone at the New School","events":152,"share":1.52,"cum":28.8},{"rank":14,"venue":"Le Poisson Rouge","events":146,"share":1.46,"cum":30.3},{"rank":15,"venue":"The Gramercy Theatre","events":142,"share":1.42,"cum":31.7}]},"Ottawa":{"total":755,"venues":63,"top1":14.7,"top5":46.2,"top10":67.5,"top20":85.6,"ranked":[{"rank":1,"venue":"LeBreton Flats Park","events":111,"share":14.7,"cum":14.7},{"rank":2,"venue":"RA Centre Grounds","events":65,"share":8.61,"cum":23.3},{"rank":3,"venue":"Bronson Centre","events":64,"share":8.48,"cum":31.8},{"rank":4,"venue":"Overflow Brewing Company","events":59,"share":7.81,"cum":39.6},{"rank":5,"venue":"Canadian Tire Centre","events":50,"share":6.62,"cum":46.2},{"rank":6,"venue":"The 27 Club","events":43,"share":5.7,"cum":51.9},{"rank":7,"venue":"House of TARG","events":43,"share":5.7,"cum":57.6},{"rank":8,"venue":"Bronson Centre Music Theatre","events":26,"share":3.44,"cum":61.1},{"rank":9,"venue":"Club SAW","events":26,"share":3.44,"cum":64.5},{"rank":10,"venue":"The Rainbow Bistro","events":23,"share":3.05,"cum":67.5},{"rank":11,"venue":"Southam Hall, National Arts Centre","events":22,"share":2.91,"cum":70.5},{"rank":12,"venue":"Dominion Tavern","events":22,"share":2.91,"cum":73.4},{"rank":13,"venue":"The Great Lawn at Lansdowne Park","events":17,"share":2.25,"cum":75.6},{"rank":14,"venue":"The Brass Monkey","events":14,"share":1.85,"cum":77.5},{"rank":15,"venue":"Hard Rock Live","events":13,"share":1.72,"cum":79.2}]},"San Francisco":{"total":3755,"venues":198,"top1":7.1,"top5":25.9,"top10":45.2,"top20":69.9,"ranked":[{"rank":1,"venue":"Great American Music Hall","events":268,"share":7.14,"cum":7.1},{"rank":2,"venue":"Bottom of the Hill","events":184,"share":4.9,"cum":12.0},{"rank":3,"venue":"The Independent","events":176,"share":4.69,"cum":16.7},{"rank":4,"venue":"The Fillmore","events":172,"share":4.58,"cum":21.3},{"rank":5,"venue":"The Chapel","events":171,"share":4.55,"cum":25.9},{"rank":6,"venue":"The Regency Ballroom","events":168,"share":4.47,"cum":30.3},{"rank":7,"venue":"Golden Gate Park","events":168,"share":4.47,"cum":34.8},{"rank":8,"venue":"The Warfield","events":152,"share":4.05,"cum":38.9},{"rank":9,"venue":"August Hall","events":122,"share":3.25,"cum":42.1},{"rank":10,"venue":"Rickshaw Stop","events":118,"share":3.14,"cum":45.2},{"rank":11,"venue":"Masonic Auditorium","events":113,"share":3.01,"cum":48.3},{"rank":12,"venue":"DNA Lounge","events":111,"share":2.96,"cum":51.2},{"rank":13,"venue":"The Guild Theatre","events":106,"share":2.82,"cum":54.0},{"rank":14,"venue":"Neck of the Woods","events":97,"share":2.58,"cum":56.6},{"rank":15,"venue":"Brick & Mortar Music Hall","events":96,"share":2.56,"cum":59.2}]},"Toronto":{"total":5304,"venues":290,"top1":7.7,"top5":27.3,"top10":41.9,"top20":59.6,"ranked":[{"rank":1,"venue":"History","events":411,"share":7.75,"cum":7.7},{"rank":2,"venue":"Danforth Music Hall","events":324,"share":6.11,"cum":13.9},{"rank":3,"venue":"Lee's Palace","events":254,"share":4.79,"cum":18.6},{"rank":4,"venue":"Massey Hall","events":249,"share":4.69,"cum":23.3},{"rank":5,"venue":"Budweiser Stage","events":212,"share":4.0,"cum":27.3},{"rank":6,"venue":"Mod Club Theatre","events":177,"share":3.34,"cum":30.7},{"rank":7,"venue":"The Concert Hall","events":167,"share":3.15,"cum":33.8},{"rank":8,"venue":"The Opera House","events":166,"share":3.13,"cum":37.0},{"rank":9,"venue":"Velvet Underground","events":134,"share":2.53,"cum":39.5},{"rank":10,"venue":"Scotiabank Arena","events":129,"share":2.43,"cum":41.9},{"rank":11,"venue":"REBEL","events":126,"share":2.38,"cum":44.3},{"rank":12,"venue":"The Phoenix Concert Theatre","events":117,"share":2.21,"cum":46.5},{"rank":13,"venue":"The Garrison","events":115,"share":2.17,"cum":48.7},{"rank":14,"venue":"Horseshoe Tavern","events":111,"share":2.09,"cum":50.8},{"rank":15,"venue":"The Axis Club","events":108,"share":2.04,"cum":52.8}]},"Vancouver":{"total":2090,"venues":158,"top1":9.2,"top5":36.9,"top10":54.7,"top20":74.4,"ranked":[{"rank":1,"venue":"Commodore Ballroom","events":193,"share":9.23,"cum":9.2},{"rank":2,"venue":"Rickshaw Theatre","events":182,"share":8.71,"cum":17.9},{"rank":3,"venue":"The Pearl","events":171,"share":8.18,"cum":26.1},{"rank":4,"venue":"Vogue Theatre","events":123,"share":5.89,"cum":32.0},{"rank":5,"venue":"Green Auto","events":102,"share":4.88,"cum":36.9},{"rank":6,"venue":"Rogers Arena","events":87,"share":4.16,"cum":41.1},{"rank":7,"venue":"The Cobalt","events":85,"share":4.07,"cum":45.1},{"rank":8,"venue":"Hollywood Theatre","events":79,"share":3.78,"cum":48.9},{"rank":9,"venue":"Fox Cabaret","events":67,"share":3.21,"cum":52.1},{"rank":10,"venue":"Biltmore Cabaret","events":55,"share":2.63,"cum":54.7},{"rank":11,"venue":"Grey Lab","events":55,"share":2.63,"cum":57.4},{"rank":12,"venue":"W.I.S.E. Hall","events":54,"share":2.58,"cum":60.0},{"rank":13,"venue":"Bully's Studios Inc","events":50,"share":2.39,"cum":62.3},{"rank":14,"venue":"Red Gate","events":50,"share":2.39,"cum":64.7},{"rank":15,"venue":"The Orpheum","events":42,"share":2.01,"cum":66.7}]},"Washington":{"total":4291,"venues":263,"top1":9.5,"top5":30.3,"top10":49.1,"top20":71.2,"ranked":[{"rank":1,"venue":"9:30 Club","events":406,"share":9.46,"cum":9.5},{"rank":2,"venue":"The Atlantis","events":259,"share":6.04,"cum":15.5},{"rank":3,"venue":"The Anthem","events":238,"share":5.55,"cum":21.0},{"rank":4,"venue":"The Fillmore Silver Spring","events":226,"share":5.27,"cum":26.3},{"rank":5,"venue":"DC9","events":173,"share":4.03,"cum":30.3},{"rank":6,"venue":"Union Stage","events":171,"share":3.99,"cum":34.3},{"rank":7,"venue":"Songbyrd Music House","events":164,"share":3.82,"cum":38.1},{"rank":8,"venue":"Black Cat","events":164,"share":3.82,"cum":42.0},{"rank":9,"venue":"RFK Stadium Grounds","events":156,"share":3.64,"cum":45.6},{"rank":10,"venue":"The Birchmere","events":150,"share":3.5,"cum":49.1},{"rank":11,"venue":"Pie Shop","events":142,"share":3.31,"cum":52.4},{"rank":12,"venue":"Pearl Street Warehouse","events":138,"share":3.22,"cum":55.6},{"rank":13,"venue":"Filene Center","events":102,"share":2.38,"cum":58.0},{"rank":14,"venue":"Jammin Java","events":95,"share":2.21,"cum":60.2},{"rank":15,"venue":"Comet Ping Pong","events":93,"share":2.17,"cum":62.4}]}};
+const COLORS={left:"#e76f51",right:"#2a9d8f"};
+const CITIES=Object.keys(DATA);
+let leftCity="Toronto";
+let rightCity="Montreal";
+let selectedRank=1;
+
+function fmtInt(x){return x.toLocaleString("en-US");}
+function fmtPct(x){return `${Number(x).toFixed(1)}%`;}
+function byRank(city,rank){return DATA[city].ranked.find(d=>d.rank===rank);}
+function winner(metric){
+  const a=DATA[leftCity][metric], b=DATA[rightCity][metric];
+  if(a===b) return "Tie";
+  return a>b ? leftCity : rightCity;
+}
+
+function renderButtons(targetId, side){
+  const holder=document.getElementById(targetId);
+  holder.innerHTML="";
+  CITIES.forEach(city=>{
+    const btn=document.createElement("button");
+    btn.className="city-btn";
+    if((side==="left"&&city===leftCity)||(side==="right"&&city===rightCity)) btn.classList.add("active",side);
+    btn.textContent=city;
+    btn.onclick=()=>{
+      if(side==="left"){
+        if(city===rightCity) rightCity=leftCity;
+        leftCity=city;
+      }else{
+        if(city===leftCity) leftCity=rightCity;
+        rightCity=city;
+      }
+      selectedRank=1;
+      renderAll();
+    };
+    holder.appendChild(btn);
+  });
+}
+
+function renderSummary(){
+  const left=DATA[leftCity], right=DATA[rightCity];
+  const delta10=(right.top10-left.top10).toFixed(1);
+  const row=document.getElementById("summaryRow");
+  row.innerHTML=`
+    <div class="metric-card">
+      <div class="card-label">Events</div>
+      <div class="metric-val">${fmtInt(left.total)} vs ${fmtInt(right.total)}</div>
+      <div class="metric-sub">${leftCity} vs ${rightCity}</div>
+    </div>
+    <div class="metric-card">
+      <div class="card-label">Venue Count</div>
+      <div class="metric-val">${fmtInt(left.venues)} vs ${fmtInt(right.venues)}</div>
+      <div class="metric-sub">More venues usually means a longer tail.</div>
+    </div>
+    <div class="metric-card">
+      <div class="card-label">Top 5 Share</div>
+      <div class="metric-val">${fmtPct(left.top5)} vs ${fmtPct(right.top5)}</div>
+      <div class="metric-sub">${winner("top5")} is more concentrated at the very top.</div>
+    </div>
+    <div class="metric-card">
+      <div class="card-label">Top 10 Share</div>
+      <div class="metric-val">${fmtPct(left.top10)} vs ${fmtPct(right.top10)}</div>
+      <div class="metric-sub ${delta10 >= 0 ? "delta-pos":"delta-neg"}">${rightCity} minus ${leftCity}: ${delta10 > 0 ? "+" : ""}${delta10} pts</div>
+    </div>
+    <div class="metric-card">
+      <div class="card-label">Top 20 Share</div>
+      <div class="metric-val">${fmtPct(left.top20)} vs ${fmtPct(right.top20)}</div>
+      <div class="metric-sub">Useful for seeing how quickly the tail takes over.</div>
+    </div>
+  `;
+
+  document.getElementById("chartTitle").textContent=`${leftCity} vs ${rightCity}`;
+  document.getElementById("chartCopy").textContent=
+    `${rightCity} top 10 venues account for ${fmtPct(right.top10)} of events, while ${leftCity} reaches ${fmtPct(left.top10)}. Comparing by rank makes the difference in concentration clearer than comparing venue names directly.`;
+  document.getElementById("leftAxisName").textContent=leftCity;
+  document.getElementById("rightAxisName").textContent=rightCity;
+}
+
+function renderMirror(){
+  const left=DATA[leftCity], right=DATA[rightCity];
+  const rows=document.getElementById("mirrorRows");
+  rows.innerHTML="";
+  const maxShare=Math.max(...left.ranked.map(d=>d.share),...right.ranked.map(d=>d.share));
+
+  for(let rank=1; rank<=15; rank++){
+    const l=byRank(leftCity,rank);
+    const r=byRank(rightCity,rank);
+    const row=document.createElement("div");
+    row.className="rank-row";
+    row.innerHTML=`
+      <div class="bar-cell left">
+        <div class="venue-label" title="${l.venue}">${l.venue}</div>
+        <div class="bar-track">
+          <div class="bar-fill left ${selectedRank===rank?'active':''}" style="width:${(l.share/maxShare)*100}%">
+            <span class="share-label left">${fmtPct(l.share)}</span>
+          </div>
+        </div>
+      </div>
+      <div class="rank-pill">Rank ${rank}</div>
+      <div class="bar-cell right">
+        <div class="bar-track">
+          <div class="bar-fill right ${selectedRank===rank?'active':''}" style="width:${(r.share/maxShare)*100}%">
+            <span class="share-label right">${fmtPct(r.share)}</span>
+          </div>
+        </div>
+        <div class="venue-label" title="${r.venue}">${r.venue}</div>
+      </div>
+    `;
+    row.onclick=()=>{selectedRank=rank;renderMirror();renderDetail();};
+    rows.appendChild(row);
+  }
+}
+
+function renderDetail(){
+  const leftItem=byRank(leftCity,selectedRank);
+  const rightItem=byRank(rightCity,selectedRank);
+  const gap=(rightItem.share-leftItem.share).toFixed(1);
+  const lead=Math.abs(gap) < 0.05 ? "The two cities are nearly tied at this rank." :
+    (gap > 0 ? `${rightCity} is more concentrated at rank ${selectedRank}.` : `${leftCity} is more concentrated at rank ${selectedRank}.`);
+  document.getElementById("detailTagWrap").innerHTML=`
+    <span class="detail-tag left">${leftCity}</span>
+    <span class="detail-tag right" style="margin-left:6px">${rightCity}</span>
+  `;
+  document.getElementById("detailTitle").textContent=`Rank ${selectedRank} comparison`;
+  document.getElementById("detailCopy").textContent=
+    `${leftItem.venue} and ${rightItem.venue} occupy the same rank in their respective cities. ${lead}`;
+  document.getElementById("detailMeta").innerHTML=`
+    <div class="meta-box">
+      <div class="meta-label">${leftCity}</div>
+      <div class="meta-value" style="font-size:18px">${leftItem.venue}</div>
+      <div class="detail-copy" style="margin-top:6px">${fmtInt(leftItem.events)} events · ${fmtPct(leftItem.share)} · cumulative ${fmtPct(leftItem.cum)}</div>
+    </div>
+    <div class="meta-box">
+      <div class="meta-label">${rightCity}</div>
+      <div class="meta-value" style="font-size:18px">${rightItem.venue}</div>
+      <div class="detail-copy" style="margin-top:6px">${fmtInt(rightItem.events)} events · ${fmtPct(rightItem.share)} · cumulative ${fmtPct(rightItem.cum)}</div>
+    </div>
+  `;
+  document.getElementById("detailGap").textContent=`${gap > 0 ? "+" : ""}${gap} pts`;
+
+  const left=DATA[leftCity], right=DATA[rightCity];
+  const metrics=[
+    ["Top 1",left.top1,right.top1],
+    ["Top 5",left.top5,right.top5],
+    ["Top 10",left.top10,right.top10],
+    ["Top 20",left.top20,right.top20]
+  ];
+  const maxMetric=Math.max(...metrics.flatMap(m=>[m[1],m[2]]));
+  document.getElementById("miniCompare").innerHTML=metrics.map(([label,a,b])=>`
+    <div class="mini-row">
+      <div class="mini-label">${label}</div>
+      <div class="mini-track">
+        <div class="mini-fill left" style="width:${(a/maxMetric)*100}%"></div>
+      </div>
+      <div class="mini-value">${fmtPct(a)} vs ${fmtPct(b)}</div>
+    </div>
+  `).join("");
+}
+
+function renderAll(){
+  renderButtons("leftButtons","left");
+  renderButtons("rightButtons","right");
+  renderSummary();
+  renderMirror();
+  renderDetail();
+}
+
+renderAll();
+</script>
+</body>
+</html>
