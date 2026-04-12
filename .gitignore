@@ -1,5 +1,7 @@
 # Data files
 *.csv
+!spotify_and_ticketmaster_data/setfim_data/*.csv
+!spotify_and_ticketmaster_data/spotify_weekly_data_2025/*.csv
 
 # API keys / secrets
 .env
@@ -8,3 +10,6 @@
 # Python
 __pycache__/
 *.pyc
+
+# Mac
+.DS_Store
