@@ -57,6 +57,14 @@ All of these files are browser-ready HTML documents. In most cases, you can simp
 - [`interaction_vinyl_map/README.md`](/Users/fanyanting/City_music_analysis/interaction_vinyl_map/README.md): focused documentation for the vinyl map interactive
 - [`interaction_vinyl_map/WRITEUP.md`](/Users/fanyanting/City_music_analysis/interaction_vinyl_map/WRITEUP.md): design rationale, data pipeline notes, and technical explanation
 
+## Project Info
+
+Course project for STA313 Data Visualization, University of Toronto, 2025.
+
+Group 50: Yanting Fan, Zixiang Huang, Xiaoyao Wang, Jingyi Yang, Yuxin Yao
+
+Data sources: `setlist.fm` and Spotify
+
 ## Notes
 
 - Some processing scripts were originally written against an earlier local folder layout, so path adjustments may be needed if you want to rerun the full pipeline.
