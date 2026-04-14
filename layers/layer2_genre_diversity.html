@@ -64,7 +64,11 @@ html,body{width:100%;height:100%;background:#08080d;color:#e8e4dc;font-family:'D
 .tick-label{font-size:12px;fill:rgba(232,228,220,.32);font-family:'DM Sans',sans-serif}
 .grid-line{stroke:rgba(255,255,255,.055);stroke-dasharray:3 7}
 .axis-line{stroke:rgba(232,228,220,.2);stroke-width:1}
-.quad-label{font-size:12px;fill:rgba(255,255,255,.1);font-style:italic;font-family:'DM Sans',sans-serif}
+.quad-label{font-size:12px;fill:rgba(232,228,220,.74);font-weight:700;font-family:'DM Sans',sans-serif}
+.quad-sub{font-size:10px;fill:rgba(232,228,220,.42);font-family:'DM Sans',sans-serif}
+.avg-line{stroke:rgba(255,255,255,.2);stroke-width:1.2;stroke-dasharray:7 7}
+.avg-badge{fill:rgba(8,8,13,.92);stroke:rgba(255,255,255,.12);stroke-width:1}
+.avg-badge-text{font-size:10px;fill:rgba(232,228,220,.78);font-weight:700;font-family:'DM Sans',sans-serif;letter-spacing:.04em}
 .note-point{cursor:pointer;transition:opacity .18s ease}
 .note-point.dim{opacity:.18}
 .note-head{fill:currentColor;opacity:.95}
@@ -75,8 +79,8 @@ html,body{width:100%;height:100%;background:#08080d;color:#e8e4dc;font-family:'D
 
 /* ── DETAIL ROW: treemap left + why-this-works/stats right ── */
 .detail-col{
-  display:flex;
-  flex-direction:column;
+  display:grid;
+  grid-template-rows:auto minmax(320px,1.15fr) minmax(0,.95fr);
   gap:12px;
   min-height:0;
   overflow:hidden;
@@ -85,14 +89,14 @@ html,body{width:100%;height:100%;background:#08080d;color:#e8e4dc;font-family:'D
   background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.08);
   border-radius:16px;padding:14px 16px;
   display:flex;flex-direction:column;gap:0;
-  flex:1;min-height:0;overflow:hidden;
+  min-height:320px;overflow:hidden;
 }
 .side-card{
   background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.08);
   border-radius:16px;padding:14px 16px;
   display:flex;flex-direction:column;gap:0;
-  flex:0 0 auto;overflow:hidden;
-  height:370px;
+  min-height:0;overflow:hidden;
+  height:auto;
 }
 
 /* treemap card */
@@ -109,11 +113,24 @@ html,body{width:100%;height:100%;background:#08080d;color:#e8e4dc;font-family:'D
 
 /* CSS grid treemap tiles */
 .treemap{
-  display:grid;
-  grid-template-columns:repeat(12,1fr);
-  grid-auto-rows:minmax(44px,1fr);
+  display:flex;
+  flex-direction:column;
   gap:6px;
   flex:1;min-height:0;
+}
+.treemap-row{
+  display:flex;
+  gap:6px;
+  min-height:0;
+}
+.treemap-row.top{flex:1.08}
+.treemap-row.bottom{flex:.92}
+.treemap-empty{
+  display:flex;align-items:center;justify-content:center;
+  flex:1;
+  font-size:13px;color:rgba(232,228,220,.28);
+  font-style:italic;line-height:1.7;text-align:center;
+  padding:0 20px;
 }
 .tile{
   position:relative;border-radius:10px;
@@ -121,12 +138,13 @@ html,body{width:100%;height:100%;background:#08080d;color:#e8e4dc;font-family:'D
   padding:8px 9px 7px;overflow:hidden;
   color:rgba(8,8,13,.88);
   display:flex;flex-direction:column;justify-content:flex-end;
+  min-width:0;
 }
 .tile-name{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;line-height:1.1}
 .tile-val{margin-top:3px;font-size:12px;font-weight:700;opacity:.82}
-.tile.small .tile-name{font-size:12px}
-.tile.small .tile-val{font-size:12px}
-.tile.tiny .tile-name{font-size:12px}
+.tile.small .tile-name{font-size:11px}
+.tile.small .tile-val{font-size:11px}
+.tile.tiny .tile-name{font-size:10px}
 .tile.tiny .tile-val{display:none}
 
 /* ── RIGHT PANEL: tabs for Why This Works / Stats ── */
@@ -187,7 +205,7 @@ html,body{width:100%;height:100%;background:#08080d;color:#e8e4dc;font-family:'D
     <div class="header-copy">
       <div class="layer-tag">Layer 2 · Genre Composition &amp; Diversity</div>
       <h1 class="title">Genre Composition <span>and Diversity</span></h1>
-      <p class="subtitle">Beyond the quantity of events, what genres does each city offer and how evenly spread is its programming? Each city is a music note: x-axis = total live events, y-axis = genre diversity score (0–10), note colour = dominant Spotify listening genre. Cities in the upper-right combine volume and breadth. Click any note to reveal the full genre breakdown.</p>
+      <p class="subtitle">Beyond the quantity of events, what genres does each city offer and how evenly spread is its programming? Each city is a music note: x-axis = total live events, y-axis = genre diversity score (0-10), and the crosshair marks the average on both axes so above/below-average cities separate visually at a glance. Click any note to reveal the full genre breakdown.</p>
     </div>
     <div class="header-nav">
       <button class="header-nav-btn" onclick="parent.scrollToAnchor('ch-0')">
@@ -213,7 +231,7 @@ html,body{width:100%;height:100%;background:#08080d;color:#e8e4dc;font-family:'D
       <div class="chart-top">
         <div>
           <div class="chart-title">Where Volume Meets Variety</div>
-          <div class="chart-copy">Each city becomes a note on a common scale so volume and diversity can be read side by side.</div>
+          <div class="chart-copy">The dashed crosshair marks the average event volume and average diversity score, splitting cities into four clearer groups.</div>
         </div>
         <div class="legend" id="legend"></div>
       </div>
@@ -228,7 +246,7 @@ html,body{width:100%;height:100%;background:#08080d;color:#e8e4dc;font-family:'D
       <!-- How To Read -->
       <div class="how-to-read-card">
         <div class="htr-label">How To Read</div>
-        <div class="htr-body">X axis = total live events in 2025. Y axis = genre diversity score (0–10). Note colour = dominant Spotify listening genre. Click any note to reveal the city's genre breakdown and stats below.</div>
+        <div class="htr-body">X axis = total live events in 2025. Y axis = genre diversity score (0-10). The dashed vertical and horizontal lines sit at the average value for all cities, so left/right means below/above-average volume and down/up means below/above-average diversity. Click any note to reveal the city's genre breakdown and stats below.</div>
       </div>
 
       <!-- treemap -->
@@ -254,7 +272,7 @@ html,body{width:100%;height:100%;background:#08080d;color:#e8e4dc;font-family:'D
       </div>
 
       <div class="tab-pane active" id="pane-why">
-        <p class="why-body">A scatterplot is the clearest way to compare <strong>volume</strong> and <strong>diversity</strong> simultaneously. A city in the upper-right tells a very different story from one in the lower-right: both may be busy, but only one offers broad cultural access.</p>
+        <p class="why-body">A scatterplot is the clearest way to compare <strong>volume</strong> and <strong>diversity</strong> simultaneously. Using the average as the dividing line makes the four groups easier to read: above-average volume and diversity means a city is both busy and broad, while above-average volume but below-average diversity suggests scale without as much range.</p>
         <p class="why-body">We use <strong>music note icons</strong> instead of plain dots — the mark itself signals the domain, orienting the reader without sacrificing legibility. Note size stays fixed so position, not area, carries the data.</p>
         <p class="why-body">The note colour encodes the <strong>dominant Spotify listening genre</strong> (demand), while the treemap shows <strong>live event supply</strong>. A mismatch between the two is itself informative.</p>
         <div class="why-subtitle">Encoding choices</div>
@@ -308,6 +326,8 @@ Object.keys(GENRE_COLORS).forEach(g=>{
 const tooltip = document.getElementById('tooltip');
 let selected = DATA.find(d=>d.city==='Toronto') || DATA[0];
 const maxEvents = Math.max(...DATA.map(d=>d.events));
+const avgEvents = DATA.reduce((sum,d)=>sum+d.events,0)/DATA.length;
+const avgDiversity = DATA.reduce((sum,d)=>sum+d.diversity,0)/DATA.length;
 
 // ── TAB SWITCHING ──
 function switchTab(id, btn) {
@@ -361,19 +381,26 @@ function renderScatter() {
     if(lbl) parts.push(`<text class="tick-label" x="${x}" y="${margin.top+ih+16}" text-anchor="middle">${lbl}</text>`);
   });
 
-  // quadrant dividers
-  const qx=xS(maxEvents/2), qy=yS(5);
-  parts.push(`<line stroke="rgba(255,255,255,.06)" stroke-dasharray="4 8" x1="${qx}" y1="${margin.top}" x2="${qx}" y2="${margin.top+ih}"/>`);
-  parts.push(`<line stroke="rgba(255,255,255,.06)" stroke-dasharray="4 8" x1="${margin.left}" y1="${qy}" x2="${W-margin.right}" y2="${qy}"/>`);
+  // average dividers
+  const qx=xS(avgEvents), qy=yS(avgDiversity);
+  parts.push(`<line class="avg-line" x1="${qx}" y1="${margin.top}" x2="${qx}" y2="${margin.top+ih}"/>`);
+  parts.push(`<line class="avg-line" x1="${margin.left}" y1="${qy}" x2="${W-margin.right}" y2="${qy}"/>`);
+  parts.push(`<rect class="avg-badge" x="${Math.min(W-margin.right-92, qx+10)}" y="${margin.top+10}" width="82" height="20" rx="10"/>`);
+  parts.push(`<text class="avg-badge-text" x="${Math.min(W-margin.right-51, qx+51)}" y="${margin.top+24}" text-anchor="middle">Avg volume</text>`);
+  parts.push(`<rect class="avg-badge" x="${margin.left+10}" y="${Math.max(margin.top+10, qy-30)}" width="94" height="20" rx="10"/>`);
+  parts.push(`<text class="avg-badge-text" x="${margin.left+57}" y="${Math.max(margin.top+24, qy-16)}" text-anchor="middle">Avg diversity</text>`);
 
   // quadrant labels
   const ql=[
-    {x:margin.left+iw*.15, y:margin.top+ih*.12, t:"Low vol · High diversity"},
-    {x:margin.left+iw*.78, y:margin.top+ih*.12, t:"High vol · High diversity"},
-    {x:margin.left+iw*.15, y:margin.top+ih*.94, t:"Low vol · Low diversity"},
-    {x:margin.left+iw*.78, y:margin.top+ih*.94, t:"High vol · Low diversity"},
+    {x:margin.left+iw*.18, y:margin.top+ih*.10, t:"Below-average volume", s:"Above-average variety"},
+    {x:margin.left+iw*.8, y:margin.top+ih*.10, t:"Above-average volume", s:"Above-average variety"},
+    {x:margin.left+iw*.18, y:margin.top+ih*.9, t:"Below-average volume", s:"Below-average variety"},
+    {x:margin.left+iw*.8, y:margin.top+ih*.9, t:"Above-average volume", s:"Below-average variety"},
   ];
-  ql.forEach(q=>parts.push(`<text class="quad-label" x="${q.x}" y="${q.y}" text-anchor="middle">${q.t}</text>`));
+  ql.forEach(q=>{
+    parts.push(`<text class="quad-label" x="${q.x}" y="${q.y}" text-anchor="middle">${q.t}</text>`);
+    parts.push(`<text class="quad-sub" x="${q.x}" y="${q.y+14}" text-anchor="middle">${q.s}</text>`);
+  });
 
   // axes
   parts.push(`<line class="axis-line" x1="${margin.left}" y1="${margin.top+ih}" x2="${W-margin.right}" y2="${margin.top+ih}"/>`);
@@ -422,17 +449,31 @@ function buildTreemap(d) {
   const treemap = document.getElementById('treemap');
   treemap.innerHTML = '';
   const ordered = Object.entries(d.genres).sort((a,b)=>b[1]-a[1]);
-  // span allocation: top genres get more columns
-  const spans = [4, 3, 2, 1, 1, 1, 1, 1]; // sums to 14 but grid is 12, wrap naturally
-  ordered.forEach(([genre, val], i) => {
-    const span = spans[i] || 1;
+  if (!ordered.length) {
+    treemap.innerHTML = '<div class="treemap-empty">No genre distribution available.</div>';
+    return;
+  }
+  const topRow = ordered.slice(0,3);
+  const bottomRow = ordered.slice(3);
+  const makeTile = ([genre, val], i, rowCount) => {
     const tile = document.createElement('div');
-    tile.className = 'tile' + (span <= 1 ? ' small' : '') + (span < 1 ? ' tiny' : '');
-    tile.style.gridColumn = `span ${span}`;
+    const isSmall = rowCount >= 5 || i >= 3;
+    tile.className = 'tile' + (isSmall ? ' small' : '');
+    tile.style.flex = `${Math.max(val * 100, rowCount >= 5 ? 9 : 16)} 1 0`;
     tile.style.background = GENRE_COLORS[genre] || '#999';
     tile.innerHTML = `<div class="tile-name">${genre}</div><div class="tile-val">${Math.round(val*100)}%</div>`;
-    treemap.appendChild(tile);
-  });
+    return tile;
+  };
+  const top = document.createElement('div');
+  top.className = 'treemap-row top';
+  topRow.forEach((entry, i) => top.appendChild(makeTile(entry, i, topRow.length)));
+  treemap.appendChild(top);
+  if (bottomRow.length) {
+    const bottom = document.createElement('div');
+    bottom.className = 'treemap-row bottom';
+    bottomRow.forEach((entry, i) => bottom.appendChild(makeTile(entry, i + 3, bottomRow.length)));
+    treemap.appendChild(bottom);
+  }
 }
 
 // ── STATS ──

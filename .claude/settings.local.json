@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/uoft/sta313/project/**)",
+      "Bash(python -c ':*)"
+    ]
+  }
+}
