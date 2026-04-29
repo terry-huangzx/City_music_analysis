@@ -1,71 +1,133 @@
-# City Music Analysis
+# City Music Pulse
 
-City Music Analysis is a multi-part data visualization project about how live music activity varies across major North American cities. The repository combines raw event data, exploratory visualization layers, and a polished final storytelling experience that turns concert activity into an interactive narrative.
+**Where does live music happen in North America — and what does each city actually sound like?**
 
-At its core, the project asks a simple question: how can we compare the musical character of cities through the events they host, the genres they surface, and the venues that shape their scenes?
+An interactive data visualization that transforms 56,000+ concert records and Spotify streaming data into a scrollytelling narrative, comparing the live music ecosystems of 13 North American cities.
 
-## Project Structure
+Built for STA313 Data Visualization, University of Toronto, 2025.
 
-The repo is organized into three main parts:
+<br>
 
-### 1. Data assets
+## Quick Start
 
-[`spotify_and_ticketmaster_data/`](/Users/fanyanting/City_music_analysis/spotify_and_ticketmaster_data) stores the source CSV files used throughout the project.
+Everything runs in the browser. No installs, no server — just open the HTML file.
 
-- `setfim_data/` contains 13 city-level `setlist.fm` concert datasets for 2025
-- `spotify_weekly_data_2025/` contains Spotify weekly chart exports used for comparison and enrichment
+| | File | What it is |
+|---|---|---|
+| **Start here** | [`output/city_music_pulse.html`](output/city_music_pulse.html) | Full scrollytelling experience — interactive vinyl map hero, four analytical chapters, guided narrative |
+| Standalone | [`output/hero_vinyl_map.html`](output/hero_vinyl_map.html) | The vinyl-record map as a self-contained exploratory tool |
 
-### 2. Exploratory visualization layers
+> Both are single-file, self-contained HTML. All data, styles, and scripts are embedded — no external dependencies.
 
-[`layers/`](/Users/fanyanting/City_music_analysis/layers) contains four standalone HTML prototypes, each exploring a different analytical lens:
+<br>
 
-- [`layer1_seasonal_volume.html`](/Users/fanyanting/City_music_analysis/layers/layer1_seasonal_volume.html): monthly event volume across cities
-- [`layer2_genre_diversity.html`](/Users/fanyanting/City_music_analysis/layers/layer2_genre_diversity.html): genre composition and diversity by city
-- [`layer3_venue_distribution_comparison.html`](/Users/fanyanting/City_music_analysis/layers/layer3_venue_distribution_comparison.html): rank-based venue concentration comparisons
-- [`layer4_radial_mismatch.html`](/Users/fanyanting/City_music_analysis/layers/layer4_radial_mismatch.html): temporal rhythm and supply-demand mismatch
+## What You'll See
 
-These layers function as modular analysis views and also feed into the final storytelling direction of the project.
+### The Hero — Interactive Vinyl Map
 
-### 3. Final interactive outputs
+A dark-themed map of North America with 13 spinning vinyl-disc city markers. Each of the 56,000+ concert events appears as a color-coded dot orbiting its city, pulsing to a synthesized 118 BPM beat.
 
-The repo includes two polished presentation artifacts:
+- **Click a city disc** — opens a detail panel with event count, genre distribution chart, top venues, and a scrollable concert list
+- **Click any dot** — pops a card showing that specific concert's artist, venue, date, and genre
+- **Toggle the beat** — turns the audio-reactive animation on/off
+- Dots are sorted by genre frequency and scattered in an annular ring using `sqrt` distribution for uniform density
 
-- [`final_product/city_music_pulse.html`](/Users/fanyanting/City_music_analysis/final_product/city_music_pulse.html): the long-form narrative experience that stitches together the project into a scrolling story
-- [`interaction_vinyl_map/hero-real-data.html`](/Users/fanyanting/City_music_analysis/interaction_vinyl_map/hero-real-data.html): a self-contained interactive "vinyl map" showing live concert activity across 13 metros
+### Four Analytical Layers
 
-The `interaction_vinyl_map` folder also includes the processing scripts, processed JSON, and project-specific documentation for that piece.
+Each chapter is a standalone interactive visualization, woven into the scroll narrative with story cards:
 
-## Recommended Entry Points
+| Layer | Question | Visualization |
+|---|---|---|
+| **1 — Seasonal Volume** | When do cities come alive? | Heatmap grid (city x month), toggleable raw / per-capita, click to rank |
+| **2 — Genre Diversity** | What does each city sound like? | Scatter plot (events vs. diversity index) + click-to-expand genre treemap |
+| **3 — Venue Distribution** | Mega-venues or grassroots scenes? | Dual-city ranked bar chart with cumulative concentration curve |
+| **4 — Demand Mismatch** | Where does listener demand outpace live supply? | Radial calendar (7 weekdays x 6 weeks), color-coded by gap severity |
 
-If you are opening this repo for the first time, start here:
+<br>
 
-1. Open [`final_product/city_music_pulse.html`](/Users/fanyanting/City_music_analysis/final_product/city_music_pulse.html) for the full narrative experience.
-2. Open [`interaction_vinyl_map/hero-real-data.html`](/Users/fanyanting/City_music_analysis/interaction_vinyl_map/hero-real-data.html) for the standalone interactive hero visualization.
-3. Browse the files in [`layers/`](/Users/fanyanting/City_music_analysis/layers) if you want to see the intermediate analytical views.
+## Repository Structure
 
-All of these files are browser-ready HTML documents. In most cases, you can simply open them directly in a modern browser.
+```
+.
+├── output/                              # Final deliverables
+│   ├── city_music_pulse.html            #   Scrollytelling narrative (hero + 4 layers)
+│   └── hero_vinyl_map.html              #   Standalone interactive vinyl map
+│
+├── layers/                              # Analytical prototypes (one per chapter)
+│   ├── layer1_seasonal_volume.html
+│   ├── layer2_genre_diversity.html
+│   ├── layer3_venue_distribution.html
+│   └── layer4_demand_mismatch.html
+│
+├── scripts/                             # Data pipeline
+│   ├── setlistfm_api.py                 #   API scraper for setlist.fm
+│   ├── process_hero_data.py             #   Cleaning, geocoding, aggregation
+│   └── build_hero.py                    #   Generates self-contained HTML output
+│
+├── data/                                # Source datasets
+│   ├── setlistfm/                       #   13 city-level concert CSVs (56,000+ events)
+│   └── spotify/                         #   Spotify weekly chart CSVs (13 cities)
+│
+└── docs/                                # Project documentation
+    ├── writeup.md                       #   Design rationale and technical notes
+    └── demo_script.md                   #   Video presentation storyboard
+```
 
-## Highlights
+<br>
 
-- Real concert data collected from `setlist.fm`
-- Comparative analysis across 13 North American metros
-- Multiple visualization forms, from exploratory analytical layers to a final narrative experience
-- Self-contained HTML outputs that are easy to share and review
+## Data Pipeline
 
-## Documentation
+```
+setlist.fm API                          Spotify Weekly Charts
+      │                                        │
+      ▼                                        │
+setlistfm_api.py                               │
+      │                                        │
+      ▼                                        │
+  13 city CSVs ────────────┐                   │
+   (56,000+ events)        │                   │
+                           ▼                   ▼
+                   process_hero_data.py ◄───────┘
+                           │
+                           ▼
+                     hero_data.json
+                           │
+                           ▼
+                     build_hero.py
+                           │
+                           ▼
+                  hero_vinyl_map.html  ──►  embedded in city_music_pulse.html
+```
 
-- [`interaction_vinyl_map/README.md`](/Users/fanyanting/City_music_analysis/interaction_vinyl_map/README.md): focused documentation for the vinyl map interactive
-- [`interaction_vinyl_map/WRITEUP.md`](/Users/fanyanting/City_music_analysis/interaction_vinyl_map/WRITEUP.md): design rationale, data pipeline notes, and technical explanation
+<br>
 
-## Project Info
+## Technical Highlights
 
-Course project for STA313 Data Visualization, University of Toronto, 2025.
+- **Zero dependencies** — no React, no D3, no build tools. Pure HTML/CSS/JS, each output is a single file
+- **Layered HTML5 Canvas** — three stacked canvases (disc layer, map layer, dot layer) for smooth 60fps rendering of 56,000+ animated dots
+- **DPR-aware rendering** — canvas backing store scaled by `devicePixelRatio` with explicit CSS sizing to prevent coordinate mismatch across different displays
+- **Web Audio API** — procedural 118 BPM beat (kick, snare, hi-hat) that drives dot animation through amplitude coupling
+- **Annular scatter** — `sqrt(random)` radial distribution ensures uniform dot density across the ring area, not clustered near the center
+- **DOM-anchored positioning** — dot positions computed from live `getBoundingClientRect()` of marker elements, so canvas dots track DOM layout perfectly on resize
+- **Proportional map projection** — longitude/latitude to pixel with `cos(lat)` correction for consistent city spacing
 
-Group 50: Yanting Fan, Zixiang Huang, Xiaoyao Wang, Jingyi Yang, Yuxin Yao
+<br>
 
-Data sources: `setlist.fm` and Spotify
+## Data Sources
 
-## Notes
+| Source | What | Coverage |
+|---|---|---|
+| [setlist.fm](https://www.setlist.fm/) | Concert events — artist, venue, date, setlist | 13 cities, 56,000+ events, 2025 |
+| [Spotify](https://www.spotify.com/) | Weekly streaming charts — top tracks, demand scores, genres | 13 cities, weekly, 2025 |
 
-- Some processing scripts were originally written against an earlier local folder layout, so path adjustments may be needed if you want to rerun the full pipeline.
-- The repo currently works best as a presentation and documentation artifact, with the HTML outputs serving as the easiest way to explore the project.
+**Cities**: Calgary, Chicago, Detroit, Las Vegas, Los Angeles, Miami, Montreal, New York, Ottawa, San Francisco, Toronto, Vancouver, Washington DC
+
+<br>
+
+## Team
+
+**Group 50 — Data Groover**
+
+Yanting Fan · Zixiang Huang · Xiaoyao Wang · Jingyi Yang · Yuxin Yao
+
+STA313 Data Visualization · University of Toronto · 2025
