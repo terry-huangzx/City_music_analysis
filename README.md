@@ -122,12 +122,3 @@ setlistfm_api.py                               │
 
 **Cities**: Calgary, Chicago, Detroit, Las Vegas, Los Angeles, Miami, Montreal, New York, Ottawa, San Francisco, Toronto, Vancouver, Washington DC
 
-<br>
-
-## Team
-
-**Group 50 — Data Groover**
-
-Yanting Fan · Zixiang Huang · Xiaoyao Wang · Jingyi Yang · Yuxin Yao
-
-STA313 Data Visualization · University of Toronto · 2025
